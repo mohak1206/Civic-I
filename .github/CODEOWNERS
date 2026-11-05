@@ -1,0 +1,6 @@
+/docker-compose.yml     @A1-HANDLE
+/.github/               @A1-HANDLE
+/PROJECT_RULES.md       @A1-HANDLE
+/build/backend/app/models/   @A2-HANDLE
+/build/backend/alembic/      @A2-HANDLE
+

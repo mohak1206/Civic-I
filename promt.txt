@@ -1,0 +1,15 @@
+CIVIC-I PROMPT LOG. Append-only. One block per prompt. Format:
+---
+[YYYY-MM-DD HH:MM] [MY_ID] [branch-name]
+PROMPT: <exact prompt text>
+RESULT: <one line when finished>
+
+---
+[2026-11-05 15:04] [A1] [main]
+PROMPT: Prompt 1 (repo skeleton, see team kit)
+RESULT: skeleton created
+
+---
+[2026-11-05 15:12] [A1] [main]
+PROMPT: - Categories: pothole, garbage. The model has exactly these two classes. Drainage obstruction is future work and must not appear in the UI as supported. - Inspection-request drafts use a local Ollama model (chosen later) behind one function in services/llm, with a fixed-template fallback.
+RESULT: updated PROJECT_RULES.md (2-class model categories and Ollama inspection draft rule) and README.md

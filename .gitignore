@@ -1,0 +1,15 @@
+.env
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+dist/
+build/web/dist/
+datasets/
+data/
+runs/
+*.pt
+*.onnx
+storage/
+.DS_Store
+

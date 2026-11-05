@@ -1,0 +1,27 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Backend tests
+        if: hashFiles('build/backend/requirements.txt') != ''
+        env:
+          PYTHONPATH: build/backend
+        run: |
+          pip install -r build/backend/requirements.txt
+          pytest -q test/backend test/pipeline test/spatial || [ $? -eq 5 ]
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Web build
+        if: hashFiles('build/web/package.json') != ''
+        run: cd build/web && npm install && npm run build
+
