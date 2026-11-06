@@ -48,3 +48,8 @@ RESULT: tokens refined in tailwind.config.js, shared-ui updated with light theme
 [2026-11-06 13:48] [A5] [a5/login-page]
 PROMPT: Build /login and /register in the same light style. Navbar on top, centered column, CornerFrame card with Citizen & Official tabs, icon items, username (3-30 chars) and password (>=8 chars) validation, demo buttons when VITE_USE_MOCK=true. Auth plumbing in src/citizen/api/auth.ts (matching POST /auth/login, POST /auth/register), AuthContext (sessionStorage + memory), ProtectedRoute, dynamic Navbar. Vitest tests.
 RESULT: /login and /register built in light theme, Citizen & Official tabs, client validation, demo logins, AuthContext (sessionStorage + memory), ProtectedRoute, dynamic Navbar, 54 unit tests passing, production build verified
+
+---
+[2026-11-06 14:14] [A5] [main]
+PROMPT: make a landing page
+RESULT: Enhanced editorial landing page with 8 sections, realistic AI vision triage mock card, sample Palghar issues strip, open tools grid, privacy callout, and light theme tokens
