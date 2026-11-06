@@ -13,3 +13,13 @@ RESULT: skeleton created
 [2026-11-05 15:12] [A1] [main]
 PROMPT: - Categories: pothole, garbage. The model has exactly these two classes. Drainage obstruction is future work and must not appear in the UI as supported. - Inspection-request drafts use a local Ollama model (chosen later) behind one function in services/llm, with a fixed-template fallback.
 RESULT: updated PROJECT_RULES.md (2-class model categories and Ollama inspection draft rule) and README.md
+
+---
+[2026-11-05 15:21] [A1] [main]
+PROMPT: DATABASE_URL=, JWT_SECRET=, OLLAMA_BASE_URL=http://localhost:11434, OLLAMA_MODEL=, STORAGE_DIR=, VITE_API_URL=
+RESULT: updated .env.example with Ollama variables
+
+---
+[2026-11-06 10:25] [feature/smart-city-reporter]
+PROMPT: Build a "Smart City Reporter" web app inside this repository, following the existing folder layout (React, Vite, Tailwind, Firebase Auth, Google Maps, local Ollama, Gamification). Plan first, show me the plan, and wait for my approval before running git push or any destructive command.
+RESULT: initial Smart City Reporter app skeleton, components, pages, services and tests implemented
