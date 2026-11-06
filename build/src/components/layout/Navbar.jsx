@@ -61,12 +61,21 @@ export function Navbar() {
         {/* User Stats & Actions */}
         <div className="flex items-center gap-2.5">
           {user && (
-            <div className="hidden sm:flex items-center gap-2 pl-2 pr-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full text-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="font-semibold text-zinc-200">{user.points || 0} XP</span>
-              <span className="text-zinc-500">|</span>
-              <span className="text-emerald-400 font-medium">Lvl {levelInfo.level}</span>
-            </div>
+            user.role === 'official' ? (
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full text-xs">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                <span className="font-bold text-amber-300">PMC Official</span>
+                <span className="text-zinc-500">|</span>
+                <span className="text-zinc-300 truncate max-w-[130px]">{user.department || 'Ward Officer'}</span>
+              </div>
+            ) : (
+              <div className="hidden sm:flex items-center gap-2 pl-2 pr-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full text-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="font-semibold text-zinc-200">{user.points || 0} XP</span>
+                <span className="text-zinc-500">|</span>
+                <span className="text-emerald-400 font-medium">Lvl {levelInfo.level}</span>
+              </div>
+            )
           )}
 
           <NotificationCenter />
@@ -77,11 +86,15 @@ export function Navbar() {
                 <span className="text-xs font-semibold text-zinc-200 truncate max-w-[120px]">
                   {user.name}
                 </span>
-                {user.isDemo && (
+                {user.role === 'official' ? (
+                  <span className="text-[10px] font-bold text-amber-400 leading-none">
+                    {user.officialTitle || 'Official'}
+                  </span>
+                ) : user.isDemo ? (
                   <Badge variant="demo" size="xs">
                     DEMO
                   </Badge>
-                )}
+                ) : null}
               </div>
               <img
                 src={user.avatar}

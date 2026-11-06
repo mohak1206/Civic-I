@@ -81,6 +81,15 @@ describe('Storage Service', () => {
       expect(leaderboard[0].name).toBe('Citizen B'); // Sorted descending by points
       expect(leaderboard[1].name).toBe('Citizen A');
     });
+
+    it('excludes official users from the citizen gamification leaderboard', () => {
+      saveCurrentUser({ id: 'usr_cit_1', name: 'Citizen Active', points: 300, role: 'citizen' });
+      saveCurrentUser({ id: 'usr_off_1', name: 'Officer Municipal', points: 900, role: 'official' });
+
+      const leaderboard = getLeaderboardUsers();
+      expect(leaderboard.some((u) => u.id === 'usr_off_1')).toBe(false);
+      expect(leaderboard.some((u) => u.id === 'usr_cit_1')).toBe(true);
+    });
   });
 
   describe('Notifications Storage', () => {

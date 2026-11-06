@@ -77,3 +77,17 @@ export function normalizePriority(priority) {
   if (['low', 'medium', 'high'].includes(clean)) return clean;
   return 'not set';
 }
+
+export const USER_ROLES = {
+  CITIZEN: 'citizen',
+  OFFICIAL: 'official',
+};
+
+export const MUNICIPAL_DEPARTMENTS = [
+  { id: 'roads', label: 'Roads & Infrastructure', code: 'PMC-RDS' },
+  { id: 'sanitation', label: 'Sanitation & Solid Waste', code: 'PMC-SNT' },
+  { id: 'electrical', label: 'Electrical & Street Lighting', code: 'PMC-ELC' },
+  { id: 'public_works', label: 'Public Works & Bridges', code: 'PMC-PWB' },
+  { id: 'general', label: 'Municipal Administration', code: 'PMC-ADM' },
+];
+

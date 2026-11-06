@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlusCircle, Search } from 'lucide-react';
+import { PlusCircle, Search, Building2, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getIssues, updateIssue } from '../services/storage';
 import { useAuth } from '../context/AuthContext';
@@ -42,9 +42,9 @@ export function Dashboard() {
     return () => window.removeEventListener('civic-issues-updated', handleUpdate);
   }, []);
 
-  const handleAdvanceStatus = (issueId, newStatus) => {
+  const handleAdvanceStatus = (issueId, newStatus, additionalUpdates = {}) => {
     try {
-      const updated = updateIssue(issueId, { status: newStatus });
+      const updated = updateIssue(issueId, { status: newStatus, ...additionalUpdates });
       loadIssues();
 
       // Check if current user is the reporter and status reached resolved
@@ -124,6 +124,32 @@ export function Dashboard() {
           Report New Issue
         </Button>
       </div>
+
+      {/* Official Municipal Portal Banner */}
+      {user?.role === 'official' && (
+        <div className="p-4 bg-gradient-to-r from-amber-500/10 via-zinc-900 to-zinc-900 border border-amber-500/30 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30 shrink-0">
+              <Building2 className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-amber-300">Official Municipal Workspace</span>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-200 border border-amber-500/30 font-semibold">
+                  {user.department || 'Palghar Municipal Council'}
+                </span>
+              </div>
+              <p className="text-xs text-zinc-400">
+                You have municipal authority to triage issues, advance repair statuses, and reassign departments.
+              </p>
+            </div>
+          </div>
+          <div className="text-xs text-zinc-400 sm:text-right shrink-0">
+            <span className="text-zinc-500 block text-[10px]">Logged in as</span>
+            <span className="text-amber-400 font-semibold">{user.name}</span>
+          </div>
+        </div>
+      )}
 
       {/* Stats Counters */}
       <StatsGrid issues={issues} />

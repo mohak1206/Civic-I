@@ -28,3 +28,8 @@ RESULT: initial Smart City Reporter app skeleton, components, pages, services an
 [2026-11-06 10:52] [feature/ollama-leaflet]
 PROMPT: Replace Google Maps with Leaflet and integrate two local Ollama models (Gemma 3 4B vision + Llama 3 text action decision). Plan first, show me the plan, and wait for my approval before running git push or any destructive command.
 RESULT: Leaflet and dual Ollama models (Gemma 3 + Llama 3) integrated, tested, and verified
+
+---
+[2026-11-06 13:07] [feature/ollama-leaflet]
+PROMPT: make 2 logins one for user and another for offcials
+RESULT: dual login portals (citizen & municipal official), role-based triage controls and tests implemented
