@@ -114,5 +114,21 @@ describe('Storage Service', () => {
       localStorage.setItem = originalSetItem;
     });
   });
+
+  describe('Backward Compatibility for Priority Field', () => {
+    it('handles legacy issues without priority safely returning undefined', () => {
+      const legacyIssue = {
+        id: 'legacy_1',
+        title: 'Old Pothole',
+        type: 'pothole',
+        status: 'reported',
+      };
+      localStorage.setItem('civic_issues', JSON.stringify([legacyIssue]));
+
+      const issues = getIssues();
+      expect(issues.length).toBe(1);
+      expect(issues[0].priority).toBeUndefined();
+    });
+  });
 });
 

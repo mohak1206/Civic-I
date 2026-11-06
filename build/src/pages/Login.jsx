@@ -86,7 +86,7 @@ export function Login() {
             </div>
             <div className="flex flex-col items-center gap-1">
               <MapPin className="w-4 h-4 text-blue-400" />
-              <span>Google Maps</span>
+              <span>OpenStreetMap</span>
             </div>
           </div>
 

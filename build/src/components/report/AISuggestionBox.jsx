@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Sparkles, Check, Edit2, AlertCircle, Info, RefreshCw } from 'lucide-react';
-import { ISSUE_TYPES } from '../../utils/constants';
+import { ISSUE_TYPES, normalizeIssueType } from '../../utils/constants';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 
@@ -22,11 +22,11 @@ export function AISuggestionBox({
         </div>
         <div className="flex-1">
           <h4 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-            Local AI Inspecting Photo...
-            <span className="text-[10px] text-zinc-500 font-mono">Ollama</span>
+            Gemma 3 Inspecting Photo...
+            <span className="text-[10px] text-zinc-500 font-mono">Vision 4B</span>
           </h4>
           <p className="text-xs text-zinc-400 mt-0.5">
-            Classifying visual hazard patterns into municipal categories...
+            Observing visual hazard indicators and classifying civic infrastructure category...
           </p>
         </div>
       </div>
@@ -67,7 +67,7 @@ export function AISuggestionBox({
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-emerald-400" />
               <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">
-                AI Suggestion
+                Gemma 3 Vision Suggestion
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -75,7 +75,7 @@ export function AISuggestionBox({
                 {Math.round((suggestion.confidence || 0.85) * 100)}% confidence
               </span>
               <Badge variant="primary" size="xs">
-                Ollama
+                Gemma 3
               </Badge>
             </div>
           </div>
@@ -86,7 +86,7 @@ export function AISuggestionBox({
                 {suggestion.type.replace(/_/g, ' ')}
               </span>
               <p className="text-xs text-zinc-300 mt-1 italic">
-                "{suggestion.summary}"
+                "{suggestion.description}"
               </p>
             </div>
           </div>
@@ -156,4 +156,3 @@ export function AISuggestionBox({
     </div>
   );
 }
-

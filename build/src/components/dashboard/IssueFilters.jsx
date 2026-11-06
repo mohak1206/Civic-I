@@ -1,12 +1,14 @@
 import React from 'react';
-import { LayoutGrid, Map as MapIcon, Filter } from 'lucide-react';
-import { ISSUE_TYPES, ISSUE_STATUSES } from '../../utils/constants';
+import { LayoutGrid, Map as MapIcon, Filter, AlertTriangle } from 'lucide-react';
+import { ISSUE_TYPES, ISSUE_STATUSES, ISSUE_PRIORITIES } from '../../utils/constants';
 
 export function IssueFilters({
   activeStatus,
   onStatusChange,
   activeType,
   onTypeChange,
+  activePriority,
+  onPriorityChange,
   myReportsOnly,
   onMyReportsChange,
   viewMode,
@@ -78,24 +80,42 @@ export function IssueFilters({
         </div>
       </div>
 
-      {/* Category Dropdown */}
-      <div className="flex items-center gap-2">
-        <Filter className="w-3.5 h-3.5 text-zinc-500" />
-        <span className="text-xs text-zinc-400">Filter by Type:</span>
-        <select
-          value={activeType}
-          onChange={(e) => onTypeChange(e.target.value)}
-          className="bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        >
-          <option value="all">All Categories</option>
-          {ISSUE_TYPES.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.label}
-            </option>
-          ))}
-        </select>
+      {/* Filters row: Category Dropdown & Priority Dropdown */}
+      <div className="flex flex-wrap items-center gap-4 text-xs">
+        <div className="flex items-center gap-2">
+          <Filter className="w-3.5 h-3.5 text-zinc-500" />
+          <span className="text-zinc-400">Category:</span>
+          <select
+            value={activeType}
+            onChange={(e) => onTypeChange(e.target.value)}
+            className="bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          >
+            <option value="all">All Categories</option>
+            {ISSUE_TYPES.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Priority Filter */}
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="w-3.5 h-3.5 text-amber-500/80" />
+          <span className="text-zinc-400">Priority:</span>
+          <select
+            value={activePriority}
+            onChange={(e) => onPriorityChange(e.target.value)}
+            className="bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          >
+            <option value="all">All Priorities</option>
+            <option value="high">High Priority</option>
+            <option value="medium">Medium Priority</option>
+            <option value="low">Low Priority</option>
+            <option value="not set">Not Set (Legacy)</option>
+          </select>
+        </div>
       </div>
     </div>
   );
 }
-

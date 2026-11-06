@@ -1,19 +1,35 @@
 import '@testing-library/jest-dom';
 
-// Simple polyfill/mock for localStorage if running in headless environment
-if (typeof window !== 'undefined' && !window.localStorage) {
-  let store = {};
-  window.localStorage = {
-    getItem: (key) => store[key] || null,
-    setItem: (key, value) => {
-      store[key] = String(value);
-    },
-    removeItem: (key) => {
-      delete store[key];
-    },
-    clear: () => {
-      store = {};
-    },
-  };
-}
+// Robust in-memory Storage mock for Vitest jsdom / Node 22 environment
+const storage = new Map();
 
+const localStorageMock = {
+  getItem: (key) => (storage.has(key) ? storage.get(key) : null),
+  setItem: (key, value) => {
+    storage.set(key, String(value));
+  },
+  removeItem: (key) => {
+    storage.delete(key);
+  },
+  clear: () => {
+    storage.clear();
+  },
+  get length() {
+    return storage.size;
+  },
+  key: (index) => Array.from(storage.keys())[index] || null,
+};
+
+Object.defineProperty(globalThis, 'localStorage', {
+  value: localStorageMock,
+  writable: true,
+  configurable: true,
+});
+
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'localStorage', {
+    value: localStorageMock,
+    writable: true,
+    configurable: true,
+  });
+}

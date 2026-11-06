@@ -1,14 +1,17 @@
 import React from 'react';
-import { MapPin, Calendar, Sparkles, ArrowRight } from 'lucide-react';
-import { ISSUE_TYPES, ISSUE_STATUSES } from '../../utils/constants';
-import { getIssueTypeColor } from '../../utils/mapHelpers';
+import { MapPin, Calendar, Sparkles, ArrowRight, AlertTriangle } from 'lucide-react';
+import { ISSUE_TYPES, ISSUE_STATUSES, ISSUE_PRIORITIES, normalizeIssueType, normalizePriority } from '../../utils/constants';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 
 export function IssueCard({ issue, onAdvanceStatus, onSelect }) {
-  const typeObj = ISSUE_TYPES.find((t) => t.id === issue.type) || ISSUE_TYPES[ISSUE_TYPES.length - 1];
+  const normType = normalizeIssueType(issue.type);
+  const typeObj = ISSUE_TYPES.find((t) => t.id === normType) || ISSUE_TYPES[ISSUE_TYPES.length - 1];
   const statusObj = ISSUE_STATUSES.find((s) => s.id === issue.status) || ISSUE_STATUSES[0];
+
+  const priorityVal = normalizePriority(issue.priority);
+  const priorityObj = ISSUE_PRIORITIES.find((p) => p.id === priorityVal) || ISSUE_PRIORITIES[3];
 
   const getNextStatus = (current) => {
     switch (current) {
@@ -45,7 +48,7 @@ export function IssueCard({ issue, onAdvanceStatus, onSelect }) {
           </div>
         )}
 
-        <div className="absolute top-2 left-2 flex items-center gap-1.5">
+        <div className="absolute top-2 left-2 flex items-center gap-1.5 flex-wrap">
           <span
             className="px-2 py-0.5 rounded-full text-[10px] font-semibold text-white shadow-md flex items-center gap-1"
             style={{ backgroundColor: typeObj.color }}
@@ -54,9 +57,17 @@ export function IssueCard({ issue, onAdvanceStatus, onSelect }) {
           </span>
         </div>
 
-        <div className="absolute top-2 right-2">
+        <div className="absolute top-2 right-2 flex items-center gap-1">
           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-md ${statusObj.color}`}>
             {statusObj.label}
+          </span>
+        </div>
+
+        {/* Priority Badge on Image Footer */}
+        <div className="absolute bottom-2 left-2">
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border backdrop-blur-md shadow-md flex items-center gap-1 ${priorityObj.color}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${priorityObj.dot}`} />
+            {priorityObj.label}
           </span>
         </div>
       </div>
@@ -86,7 +97,7 @@ export function IssueCard({ issue, onAdvanceStatus, onSelect }) {
               <Calendar className="w-3 h-3" />
               <span>{new Date(issue.createdAt).toLocaleDateString()}</span>
             </div>
-            {issue.aiSuggestion?.confirmedByUser && (
+            {issue.aiClassification?.confirmedByUser && (
               <span className="flex items-center gap-1 text-emerald-400">
                 <Sparkles className="w-2.5 h-2.5" /> AI Confirmed
               </span>
@@ -118,4 +129,3 @@ export function IssueCard({ issue, onAdvanceStatus, onSelect }) {
     </Card>
   );
 }
-
