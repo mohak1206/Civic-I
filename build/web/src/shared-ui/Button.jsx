@@ -17,16 +17,18 @@ export default function Button({
   const arrow = showArrow ?? variant === 'primary';
 
   const base =
-    'inline-flex items-center justify-center gap-2 font-heading text-xs sm:text-sm uppercase tracking-label font-semibold px-5 py-2.5 transition-colors duration-200 rounded-card focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-orange disabled:opacity-50 disabled:cursor-not-allowed';
+    'inline-flex items-center justify-center gap-2 font-heading text-xs sm:text-sm uppercase tracking-label font-semibold px-5 py-2.5 transition-colors duration-200 rounded-card focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-orange disabled:bg-btn-disabled disabled:text-white disabled:border-transparent disabled:opacity-80 disabled:cursor-not-allowed';
 
   const variants = {
-    primary: 'bg-accent-orange text-white hover:bg-orange-700 active:bg-orange-800',
+    primary: 'bg-accent-orange text-white hover:bg-orange-hover active:bg-[#B73B13]',
     outline:
       'border border-navy text-navy hover:bg-navy hover:text-white active:bg-navy/90',
+    'gold-outline':
+      'border border-accent-gold text-accent-gold hover:bg-accent-gold hover:text-white active:bg-accent-gold/90',
   };
 
   return (
-    <button className={`${base} ${variants[variant]} ${className}`} {...props}>
+    <button className={`${base} ${variants[variant] || variants.primary} ${className}`} {...props}>
       {children}
       {arrow && <ArrowRight className="w-4 h-4" />}
     </button>

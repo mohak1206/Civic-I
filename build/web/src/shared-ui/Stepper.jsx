@@ -25,7 +25,7 @@ export default function Stepper({ current = 0, steps = [] }) {
               {/* Step circle + label */}
               <div className="flex flex-col items-center min-w-0">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-heading font-semibold transition-colors
+                  className={`w-8 h-8 rounded-card flex items-center justify-center text-sm font-heading font-semibold transition-colors
                     ${done ? 'bg-accent-orange text-white' : ''}
                     ${active ? 'border-2 border-accent-orange text-accent-orange bg-white' : ''}
                     ${!done && !active ? 'border border-navy/20 text-navy/40 bg-white' : ''}
@@ -35,7 +35,7 @@ export default function Stepper({ current = 0, steps = [] }) {
                 </div>
                 <span
                   className={`mt-1.5 text-[10px] uppercase tracking-label font-heading font-medium text-center hidden sm:block
-                    ${active ? 'text-navy' : 'text-navy/40'}
+                    ${active ? 'text-accent-orange font-semibold' : 'text-navy/40'}
                   `}
                 >
                   {label}

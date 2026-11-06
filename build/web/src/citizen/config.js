@@ -27,3 +27,4 @@ export const PALGHAR_DEFAULT_CENTER = {
   lng: 72.7651,
   zoom: 13,
 };
+

@@ -11,6 +11,11 @@ export default defineConfig({
       '@citizen': path.resolve(__dirname, 'src/citizen'),
       '@map': path.resolve(__dirname, 'src/map'),
       '@shared-ui': path.resolve(__dirname, 'src/shared-ui'),
+      'react': path.resolve(__dirname, 'node_modules/react'),
+      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+      'react-router-dom': path.resolve(__dirname, 'node_modules/react-router-dom'),
+      'react/jsx-dev-runtime': path.resolve(__dirname, 'node_modules/react/jsx-dev-runtime.js'),
+      'react/jsx-runtime': path.resolve(__dirname, 'node_modules/react/jsx-runtime.js'),
     },
   },
   server: {
