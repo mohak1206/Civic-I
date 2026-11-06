@@ -21,7 +21,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - name: Web build
-        if: hashFiles('build/web/package.json') != ''
-        run: cd build/web && npm install && npm run build
-
+      - name: Web build and test
+        if: hashFiles('build/package.json') != '' || hashFiles('build/web/package.json') != ''
+        run: |
+          if [ -f build/package.json ]; then
+            cd build && npm install && npm test && npm run build
+          elif [ -f build/web/package.json ]; then
+            cd build/web && npm install && npm run build
+          fi
