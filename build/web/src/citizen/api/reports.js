@@ -69,3 +69,4 @@ export async function submitReport(reportData) {
 
   return response.json();
 }
+

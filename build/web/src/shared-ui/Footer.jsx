@@ -44,8 +44,9 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-white/10 text-center text-xs text-white/40 py-4">
-        © {year} Civic-I · Student Project · Palghar, MH
+      <div className="border-t border-white/10 px-4 py-4 max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between text-xs text-white/50 gap-2">
+        <span>© {year} Civic-I · Palghar, Maharashtra</span>
+        <span className="label-xs text-white/60">BUILT FOR PEOPLE · OPEN TOOLS</span>
       </div>
     </footer>
   );

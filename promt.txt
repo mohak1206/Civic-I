@@ -38,3 +38,13 @@ RESULT: dual login portals (citizen & municipal official), role-based triage con
 [2026-11-06 13:10] [A5] [a5/design-system]
 PROMPT: Set up the visual design system for the Civic-I citizen app in React + Vite + Tailwind, landing page at /, /dev/components, 4-step wizard at /report, /track and /track/:ref. Work only in build/web/src/citizen, build/web/src/map and build/web/src/shared-ui. Follow PROJECT_RULES.md.
 RESULT: Visual design system, shared-ui primitives, /dev/components, landing page, 4-step report wizard with Leaflet & mock AI, 13-stage tracking portal, 34 unit tests passing, production build verified
+
+---
+[2026-11-06 13:47] [A5] [a5/light-theme]
+PROMPT: The app must use a LIGHT theme. Define tokens in tailwind.config (v3). Color tokens: page #F5F3EE, panel #1B2536, card #F5F3EE border #D9D5CC, text-heading #1B2536, text-body #5B6472, text-muted #8A919C, primary orange #E8501F (hover #CF4416), blue #3B7DD8, gold #D4960F, green #2E9E5B, disabled button #5B6879. Space Grotesk + Source Serif 4/Spectral. Update /dev/components.
+RESULT: tokens refined in tailwind.config.js, shared-ui updated with light theme specs and contrast
+
+---
+[2026-11-06 13:48] [A5] [a5/login-page]
+PROMPT: Build /login and /register in the same light style. Navbar on top, centered column, CornerFrame card with Citizen & Official tabs, icon items, username (3-30 chars) and password (>=8 chars) validation, demo buttons when VITE_USE_MOCK=true. Auth plumbing in src/citizen/api/auth.ts (matching POST /auth/login, POST /auth/register), AuthContext (sessionStorage + memory), ProtectedRoute, dynamic Navbar. Vitest tests.
+RESULT: /login and /register built in light theme, Citizen & Official tabs, client validation, demo logins, AuthContext (sessionStorage + memory), ProtectedRoute, dynamic Navbar, 54 unit tests passing, production build verified
