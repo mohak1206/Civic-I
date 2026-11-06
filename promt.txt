@@ -33,3 +33,8 @@ RESULT: Leaflet and dual Ollama models (Gemma 3 + Llama 3) integrated, tested, a
 [2026-11-06 13:07] [feature/ollama-leaflet]
 PROMPT: make 2 logins one for user and another for offcials
 RESULT: dual login portals (citizen & municipal official), role-based triage controls and tests implemented
+
+---
+[2026-11-06 13:10] [A5] [a5/design-system]
+PROMPT: Set up the visual design system for the Civic-I citizen app in React + Vite + Tailwind, landing page at /, /dev/components, 4-step wizard at /report, /track and /track/:ref. Work only in build/web/src/citizen, build/web/src/map and build/web/src/shared-ui. Follow PROJECT_RULES.md.
+RESULT: Visual design system, shared-ui primitives, /dev/components, landing page, 4-step report wizard with Leaflet & mock AI, 13-stage tracking portal, 34 unit tests passing, production build verified
