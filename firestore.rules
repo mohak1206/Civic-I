@@ -1,0 +1,12 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      // Disallow all client reads and writes.
+      // Civic-I uses Firebase Authentication ONLY; reports are stored locally in the browser.
+      allow read, write: if false;
+    }
+  }
+}
+

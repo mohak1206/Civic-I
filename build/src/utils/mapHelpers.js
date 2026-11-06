@@ -1,10 +1,11 @@
-import { ISSUE_TYPES, PALGHAR_DEFAULT_CENTER } from './constants';
+import { ISSUE_TYPES, PALGHAR_DEFAULT_CENTER, normalizeIssueType } from './constants';
 
 /**
  * Returns the hex pin color for an issue type
  */
 export function getIssueTypeColor(typeId) {
-  const match = ISSUE_TYPES.find((t) => t.id === typeId);
+  const normalized = normalizeIssueType(typeId);
+  const match = ISSUE_TYPES.find((t) => t.id === normalized);
   return match ? match.color : '#3b82f6';
 }
 
@@ -44,4 +45,3 @@ export function isValidCoordinate(coord) {
 export function getSafeCenter(coord) {
   return isValidCoordinate(coord) ? coord : PALGHAR_DEFAULT_CENTER;
 }
-

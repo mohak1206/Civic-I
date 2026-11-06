@@ -12,4 +12,5 @@ runs/
 *.onnx
 storage/
 .DS_Store
+.vite/
 

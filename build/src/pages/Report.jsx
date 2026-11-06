@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Camera,
   Sparkles,
+  ShieldAlert,
   MapPin,
   FileText,
   CheckCircle2,
@@ -15,7 +16,7 @@ import confetti from 'canvas-confetti';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { saveIssue, getIssues } from '../services/storage';
-import { analyzeIssuePhoto } from '../services/ai';
+import { analyzeImage, decideAction } from '../services/ai';
 import { calculateReportPoints, evaluateBadges } from '../services/gamification';
 import { PALGHAR_DEFAULT_CENTER } from '../utils/constants';
 import { PageContainer } from '../components/layout/PageContainer';
@@ -23,24 +24,41 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { PhotoCapture } from '../components/report/PhotoCapture';
 import { AISuggestionBox } from '../components/report/AISuggestionBox';
-import { LocationPickerMap } from '../components/map/LocationPickerMap';
+import { AIActionDecisionBox } from '../components/report/AIActionDecisionBox';
+
+// Lazy-load Leaflet map component to keep non-map pages lightweight
+const LocationPickerMap = lazy(() =>
+  import('../components/map/LocationPickerMap').then((m) => ({ default: m.LocationPickerMap }))
+);
 
 const STEPS = [
   { id: 1, title: 'Photo', icon: Camera },
-  { id: 2, title: 'Classification', icon: Sparkles },
-  { id: 3, title: 'Location', icon: MapPin },
-  { id: 4, title: 'Submit', icon: FileText },
+  { id: 2, title: 'Visual AI', icon: Sparkles },
+  { id: 3, title: 'Action AI', icon: ShieldAlert },
+  { id: 4, title: 'Location', icon: MapPin },
+  { id: 5, title: 'Submit', icon: FileText },
 ];
 
 export function Report() {
   const [currentStep, setCurrentStep] = useState(1);
   const [photo, setPhoto] = useState(null);
-  const [analyzingAI, setAnalyzingAI] = useState(false);
-  const [aiSuggestion, setAiSuggestion] = useState(null);
-  const [aiError, setAiError] = useState(null);
+
+  // Vision model state (Gemma 3)
+  const [analyzingVision, setAnalyzingVision] = useState(false);
+  const [aiVisionSuggestion, setAiVisionSuggestion] = useState(null);
+  const [visionError, setVisionError] = useState(null);
   const [selectedType, setSelectedType] = useState('pothole');
   const [keptAIType, setKeptAIType] = useState(false);
 
+  // Decision model state (Llama 3)
+  const [analyzingDecision, setAnalyzingDecision] = useState(false);
+  const [aiDecision, setAiDecision] = useState(null);
+  const [decisionError, setDecisionError] = useState(null);
+  const [priority, setPriority] = useState('medium');
+  const [department, setDepartment] = useState('roads department');
+  const [reason, setReason] = useState('');
+
+  // Location state (Leaflet + Nominatim)
   const [location, setLocation] = useState({
     lat: PALGHAR_DEFAULT_CENTER.lat,
     lng: PALGHAR_DEFAULT_CENTER.lng,
@@ -57,34 +75,37 @@ export function Report() {
   const { notify } = useNotifications();
   const navigate = useNavigate();
 
-  // Run AI analysis whenever photo is chosen
+  // Run Gemma 3 vision analysis on photo select
   const handlePhotoSelect = async (compressedDataUrl) => {
     setPhoto(compressedDataUrl);
     if (!compressedDataUrl) {
-      setAiSuggestion(null);
-      setAiError(null);
+      setAiVisionSuggestion(null);
+      setVisionError(null);
       return;
     }
 
-    setAnalyzingAI(true);
-    setAiError(null);
+    setAnalyzingVision(true);
+    setVisionError(null);
     try {
-      const result = await analyzeIssuePhoto(compressedDataUrl);
+      const result = await analyzeImage(compressedDataUrl);
       if (result.success) {
-        setAiSuggestion(result);
+        setAiVisionSuggestion(result);
         setSelectedType(result.type);
         setKeptAIType(true);
         if (!title) {
           setTitle(`Reported ${result.type.replace(/_/g, ' ')} hazard`);
         }
+        if (!description && result.description) {
+          setDescription(result.description);
+        }
       } else {
-        setAiError(result.error);
-        setAiSuggestion(null);
+        setVisionError(result.error);
+        setAiVisionSuggestion(null);
       }
-    } catch (e) {
-      setAiError('Unexpected failure during visual analysis.');
+    } catch {
+      setVisionError('Unexpected failure during visual analysis.');
     } finally {
-      setAnalyzingAI(false);
+      setAnalyzingVision(false);
     }
   };
 
@@ -93,6 +114,35 @@ export function Report() {
     setKeptAIType(isAiMatch);
     if (!title || title.startsWith('Reported ')) {
       setTitle(`Reported ${type.replace(/_/g, ' ')} hazard`);
+    }
+  };
+
+  // Run Llama 3 decision analysis (pure text facts, strictly NO user personal data)
+  const runLlamaDecision = async () => {
+    setAnalyzingDecision(true);
+    setDecisionError(null);
+    try {
+      const result = await decideAction({
+        type: selectedType,
+        description: description || aiVisionSuggestion?.description || 'Civil hazard in public roadway',
+        locationText: location?.address || 'Palghar City area',
+      });
+
+      if (result.success) {
+        setAiDecision(result);
+        setPriority(result.priority || 'medium');
+        setDepartment(result.department || 'roads department');
+        setReason(result.reason || '');
+      } else {
+        setDecisionError(result.error);
+        setPriority('medium');
+        setDepartment('general municipal works');
+      }
+    } catch {
+      setDecisionError('Could not obtain action recommendation.');
+      setPriority('medium');
+    } finally {
+      setAnalyzingDecision(false);
     }
   };
 
@@ -116,14 +166,34 @@ export function Report() {
         title: finalTitle,
         description: description.trim(),
         type: selectedType,
+        priority: priority || 'medium',
+        department: department || 'general municipal works',
+        reason: reason.trim(),
         photo,
         location,
-        aiSuggestion: aiSuggestion
-          ? {
-              ...aiSuggestion,
-              confirmedByUser: keptAIType,
-            }
-          : null,
+        // Direct top-level fields for offline analysis & evaluation
+        ai_type: aiVisionSuggestion?.type || null,
+        ai_confidence: aiVisionSuggestion?.confidence ?? 0,
+        ai_priority: aiDecision?.priority || null,
+        ai_department: aiDecision?.department || null,
+        confirmed_type: selectedType,
+        confirmed_priority: priority || 'medium',
+        confirmed_department: department || 'general municipal works',
+        // Structured model metadata
+        aiClassification: {
+          model: import.meta.env.VITE_OLLAMA_VISION_MODEL || 'gemma3:4b',
+          type: aiVisionSuggestion?.type || null,
+          confidence: aiVisionSuggestion?.confidence || 0,
+          description: aiVisionSuggestion?.description || '',
+          confirmedByUser: keptAIType,
+        },
+        aiActionDecision: {
+          model: import.meta.env.VITE_OLLAMA_TEXT_MODEL || 'llama3',
+          priority: aiDecision?.priority || null,
+          department: aiDecision?.department || null,
+          reason: aiDecision?.reason || null,
+          summary: aiDecision?.summary || null,
+        },
         reporterId: user?.id || 'usr_anonymous',
         reporterName: user?.name || 'Palghar Citizen',
         status: 'reported',
@@ -141,7 +211,7 @@ export function Report() {
         {
           totalReports: userIssues.length,
           reportsWithLocation: userIssues.filter((i) => i.location?.lat && i.location?.lng).length,
-          reportsWithAI: userIssues.filter((i) => i.aiSuggestion?.confirmedByUser).length,
+          reportsWithAI: userIssues.filter((i) => i.aiClassification?.confirmedByUser).length,
           currentPoints: newPointsTotal || pointsCalc.total,
         },
         user?.badges || []
@@ -160,7 +230,7 @@ export function Report() {
 
       notify({
         title: `Report Submitted (+${pointsCalc.total} XP)`,
-        message: `Issue "${finalTitle}" successfully recorded. Municipal review queued.`,
+        message: `Issue "${finalTitle}" successfully recorded. Municipal triage queued.`,
         type: 'status',
       });
 
@@ -190,7 +260,7 @@ export function Report() {
       <div className="mb-6">
         <h1 className="text-2xl font-black text-white tracking-tight">Report Civic Issue</h1>
         <p className="text-xs text-zinc-400 mt-1">
-          Capture hazards in Palghar City. Step through photo capture, AI inspection, and geotagging.
+          Palghar City Hazard Reporting: Gemma 3 vision classification, Llama 3 urgency triage, and OpenStreetMap geolocation.
         </p>
 
         {/* Stepper Bar */}
@@ -206,7 +276,6 @@ export function Report() {
                 <button
                   type="button"
                   onClick={() => {
-                    // Only allow clicking steps if photo is uploaded
                     if (step.id === 1 || photo) setCurrentStep(step.id);
                   }}
                   className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
@@ -259,29 +328,26 @@ export function Report() {
                 <div>
                   <h3 className="text-base font-semibold text-zinc-100">Step 1: Capture or Upload Photo</h3>
                   <p className="text-xs text-zinc-400 mt-0.5">
-                    Provide a clear photo of the street problem.
+                    Provide a clear photo of the street hazard. Images are downscaled to ~640px to conserve browser storage.
                   </p>
                 </div>
 
-                <PhotoCapture
-                  photo={photo}
-                  onPhotoChange={handlePhotoSelect}
-                />
+                <PhotoCapture photo={photo} onPhotoChange={handlePhotoSelect} />
 
                 <div className="flex justify-end pt-3">
                   <Button
                     variant="primary"
-                    disabled={!photo || analyzingAI}
+                    disabled={!photo || analyzingVision}
                     onClick={() => setCurrentStep(2)}
                     icon={ArrowRight}
                   >
-                    {analyzingAI ? 'AI Inspecting...' : 'Proceed to Classification'}
+                    {analyzingVision ? 'Gemma 3 Inspecting...' : 'Proceed to Classification'}
                   </Button>
                 </div>
               </motion.div>
             )}
 
-            {/* Step 2: AI Inspection & Confirmation */}
+            {/* Step 2: Vision Model (Gemma 3) */}
             {currentStep === 2 && (
               <motion.div
                 key="step2"
@@ -292,18 +358,18 @@ export function Report() {
                 className="space-y-4"
               >
                 <div>
-                  <h3 className="text-base font-semibold text-zinc-100">Step 2: AI Review & Confirmation</h3>
+                  <h3 className="text-base font-semibold text-zinc-100">Step 2: Visual Classification (Gemma 3)</h3>
                   <p className="text-xs text-zinc-400 mt-0.5">
-                    Our local Ollama vision model evaluated the image. Verify or modify the category.
+                    Gemma 3 vision model evaluated the image. Verify or select the category.
                   </p>
                 </div>
 
                 <AISuggestionBox
-                  analyzing={analyzingAI}
-                  suggestion={aiSuggestion}
+                  analyzing={analyzingVision}
+                  suggestion={aiVisionSuggestion}
                   selectedType={selectedType}
                   onTypeSelect={handleTypeSelect}
-                  aiError={aiError}
+                  aiError={visionError}
                   onReanalyze={() => handlePhotoSelect(photo)}
                 />
 
@@ -311,14 +377,24 @@ export function Report() {
                   <Button variant="outline" onClick={() => setCurrentStep(1)} icon={ArrowLeft}>
                     Back
                   </Button>
-                  <Button variant="primary" onClick={() => setCurrentStep(3)} icon={ArrowRight}>
-                    Confirm & Pin Location
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      setCurrentStep(3);
+                      // Trigger Llama 3 when proceeding
+                      if (!aiDecision) {
+                        runLlamaDecision();
+                      }
+                    }}
+                    icon={ArrowRight}
+                  >
+                    Confirm & Evaluate Urgency
                   </Button>
                 </div>
               </motion.div>
             )}
 
-            {/* Step 3: Location Pinning */}
+            {/* Step 3: Decision Model (Llama 3) */}
             {currentStep === 3 && (
               <motion.div
                 key="step3"
@@ -329,15 +405,23 @@ export function Report() {
                 className="space-y-4"
               >
                 <div>
-                  <h3 className="text-base font-semibold text-zinc-100">Step 3: Geotag Hazard Location</h3>
+                  <h3 className="text-base font-semibold text-zinc-100">Step 3: Action & Urgency Triage (Llama 3)</h3>
                   <p className="text-xs text-zinc-400 mt-0.5">
-                    Confirm coordinates on Google Maps via GPS button, address search, or draggable pin.
+                    Llama 3 evaluates hazard facts (safety risk, traffic exposure, and municipal department routing).
                   </p>
                 </div>
 
-                <LocationPickerMap
-                  value={location}
-                  onChange={(newLoc) => setLocation(newLoc)}
+                <AIActionDecisionBox
+                  loading={analyzingDecision}
+                  decision={aiDecision}
+                  priority={priority}
+                  onPriorityChange={setPriority}
+                  department={department}
+                  onDepartmentChange={setDepartment}
+                  reason={reason}
+                  onReasonChange={setReason}
+                  onRetry={runLlamaDecision}
+                  error={decisionError}
                 />
 
                 <div className="flex justify-between pt-3">
@@ -345,13 +429,13 @@ export function Report() {
                     Back
                   </Button>
                   <Button variant="primary" onClick={() => setCurrentStep(4)} icon={ArrowRight}>
-                    Proceed to Details
+                    Confirm & Pin Location
                   </Button>
                 </div>
               </motion.div>
             )}
 
-            {/* Step 4: Final Details & Submit */}
+            {/* Step 4: Geotag Location (Leaflet + Nominatim) */}
             {currentStep === 4 && (
               <motion.div
                 key="step4"
@@ -362,9 +446,47 @@ export function Report() {
                 className="space-y-4"
               >
                 <div>
-                  <h3 className="text-base font-semibold text-zinc-100">Step 4: Finalize & Send Report</h3>
+                  <h3 className="text-base font-semibold text-zinc-100">Step 4: Geotag on OpenStreetMap</h3>
                   <p className="text-xs text-zinc-400 mt-0.5">
-                    Add optional details to assist municipal field responders.
+                    Drag the pin, search addresses via Nominatim, or use your browser GPS.
+                  </p>
+                </div>
+
+                <Suspense
+                  fallback={
+                    <div className="h-64 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-xs text-zinc-500">
+                      Loading Leaflet Map...
+                    </div>
+                  }
+                >
+                  <LocationPickerMap value={location} onChange={(newLoc) => setLocation(newLoc)} />
+                </Suspense>
+
+                <div className="flex justify-between pt-3">
+                  <Button variant="outline" onClick={() => setCurrentStep(3)} icon={ArrowLeft}>
+                    Back
+                  </Button>
+                  <Button variant="primary" onClick={() => setCurrentStep(5)} icon={ArrowRight}>
+                    Proceed to Review
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 5: Final Details & Submit */}
+            {currentStep === 5 && (
+              <motion.div
+                key="step5"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-4"
+              >
+                <div>
+                  <h3 className="text-base font-semibold text-zinc-100">Step 5: Finalize & Transmit Report</h3>
+                  <p className="text-xs text-zinc-400 mt-0.5">
+                    Review and provide optional details before saving to the civic ledger.
                   </p>
                 </div>
 
@@ -385,13 +507,13 @@ export function Report() {
 
                   <div>
                     <label className="block text-xs font-medium text-zinc-300 mb-1">
-                      Additional Description (Optional)
+                      Additional Notes (Optional)
                     </label>
                     <textarea
                       rows={3}
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      placeholder="e.g. Water logged, approximately 2 feet wide, causes bike skidding."
+                      placeholder="e.g. Water logged, approximately 2 feet wide, causes two-wheeler skidding."
                       className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
@@ -429,7 +551,7 @@ export function Report() {
                 </div>
 
                 <div className="flex justify-between pt-3">
-                  <Button variant="outline" onClick={() => setCurrentStep(3)} icon={ArrowLeft}>
+                  <Button variant="outline" onClick={() => setCurrentStep(4)} icon={ArrowLeft}>
                     Back
                   </Button>
                   <Button
@@ -449,4 +571,3 @@ export function Report() {
     </PageContainer>
   );
 }
-

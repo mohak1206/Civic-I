@@ -17,8 +17,19 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener('civic-auth-changed', handleAuthChange);
   }, []);
 
-  const loginDemo = (customName = 'Demo Citizen') => {
-    const demo = createDemoUser(customName);
+  const loginDemo = (roleOrName = 'citizen', options = {}) => {
+    let config = { role: 'citizen' };
+    if (typeof roleOrName === 'string') {
+      if (roleOrName === 'official' || roleOrName === 'citizen') {
+        config = { role: roleOrName, ...options };
+      } else {
+        config = { role: 'citizen', name: roleOrName, ...options };
+      }
+    } else if (typeof roleOrName === 'object' && roleOrName !== null) {
+      config = { role: 'citizen', ...roleOrName };
+    }
+
+    const demo = createDemoUser(config);
     const existing = getCurrentUser();
     // Preserve existing points and badges if logging in as demo user again
     const finalUser = {
@@ -31,10 +42,10 @@ export function AuthProvider({ children }) {
     return finalUser;
   };
 
-  const loginGoogle = async () => {
+  const loginGoogle = async (role = 'citizen', officialDetails = {}) => {
     setLoading(true);
     try {
-      const gUser = await loginWithGoogle();
+      const gUser = await loginWithGoogle(role, officialDetails);
       const existing = getCurrentUser();
       const finalUser = {
         ...gUser,
@@ -87,6 +98,8 @@ export function AuthProvider({ children }) {
         user,
         loading,
         isAuthenticated: !!user,
+        isOfficial: user?.role === 'official',
+        isCitizen: user?.role !== 'official',
         isFirebaseAvailable: isFirebaseConfigured(),
         loginDemo,
         loginGoogle,

@@ -33,18 +33,22 @@ if (isFirebaseConfigured()) {
   }
 }
 
-export async function loginWithGoogle() {
+export async function loginWithGoogle(role = 'citizen', officialDetails = {}) {
   if (!authInstance || !googleProvider) {
     throw new Error('Firebase Authentication is not configured. Please use Demo Login.');
   }
 
   const result = await signInWithPopup(authInstance, googleProvider);
   const user = result.user;
+  const isOfficial = role === 'official';
   return {
     id: user.uid,
-    name: user.displayName || 'Civic Reporter',
+    name: user.displayName || (isOfficial ? 'Municipal Official' : 'Civic Reporter'),
     email: user.email || '',
     avatar: user.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.uid}`,
+    role: isOfficial ? 'official' : 'citizen',
+    department: isOfficial ? (officialDetails.department || 'Roads & Infrastructure') : null,
+    officialTitle: isOfficial ? (officialDetails.title || 'Palghar Ward Officer') : null,
     isDemo: false,
   };
 }
@@ -59,12 +63,27 @@ export async function logoutFirebase() {
   }
 }
 
-export function createDemoUser(customName = 'Demo Citizen') {
+export function createDemoUser(config = 'Demo Citizen') {
+  // Support string or object parameter
+  const isObject = typeof config === 'object' && config !== null;
+  const role = isObject ? (config.role || 'citizen') : 'citizen';
+  const isOfficial = role === 'official';
+
+  const defaultName = isOfficial ? 'Er. Rajesh Sharma' : 'Demo Citizen';
+  const name = isObject ? (config.name || defaultName) : (config || defaultName);
+  const department = isObject ? (config.department || 'Roads & Infrastructure') : 'Roads & Infrastructure';
+  const officialTitle = isObject ? (config.officialTitle || 'Palghar Municipal Ward Officer') : 'Palghar Municipal Ward Officer';
+
   return {
-    id: 'usr_demo_palghar',
-    name: customName,
-    email: 'demo.citizen@palghar.local',
-    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+    id: isOfficial ? 'usr_official_palghar' : 'usr_demo_palghar',
+    name,
+    email: isOfficial ? 'r.sharma@palghar-mc.gov.in' : 'demo.citizen@palghar.local',
+    avatar: isOfficial
+      ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80'
+      : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+    role: isOfficial ? 'official' : 'citizen',
+    department: isOfficial ? department : null,
+    officialTitle: isOfficial ? officialTitle : null,
     isDemo: true,
   };
 }

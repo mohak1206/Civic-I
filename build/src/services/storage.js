@@ -137,7 +137,7 @@ export function getLeaderboardUsers() {
 }
 
 export function syncLeaderboardUser(user) {
-  if (!user || !user.id) return;
+  if (!user || !user.id || user.role === 'official') return;
   const users = safeGetItem(KEYS.USERS, []);
   const index = users.findIndex((u) => u.id === user.id);
 

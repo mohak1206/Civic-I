@@ -1,22 +1,20 @@
 import React from 'react';
-import { MapPinOff, AlertTriangle, Key } from 'lucide-react';
+import { MapPinOff, AlertTriangle } from 'lucide-react';
 
-export function MapFallback({ message, isAuthFailure = false, address, onAddressChange }) {
+export function MapFallback({ message, address, onAddressChange }) {
   return (
     <div className="w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl p-5 flex flex-col items-center justify-center text-center">
       <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mb-3">
-        {isAuthFailure ? <AlertTriangle className="w-6 h-6" /> : <Key className="w-6 h-6" />}
+        <MapPinOff className="w-6 h-6" />
       </div>
 
       <h4 className="text-sm font-semibold text-zinc-200">
-        {isAuthFailure ? 'Google Maps Authentication Notice' : 'Interactive Map Unavailable'}
+        Map View Offline
       </h4>
 
       <p className="text-xs text-zinc-400 max-w-md mt-1 mb-4 leading-relaxed">
         {message ||
-          (isAuthFailure
-            ? 'Google Maps API reported an authentication failure (gm_authFailure). Verify that billing is enabled and your key is unrestricted for this origin.'
-            : 'VITE_GOOGLE_MAPS_API_KEY is not configured in .env. You can still enter or confirm your report location using the address field below.')}
+          'The interactive map could not be loaded. You can still enter or confirm your report location using the address field below.'}
       </p>
 
       {onAddressChange && (
@@ -38,4 +36,3 @@ export function MapFallback({ message, isAuthFailure = false, address, onAddress
     </div>
   );
 }
-

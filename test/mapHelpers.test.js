@@ -5,15 +5,16 @@ import {
   isValidCoordinate,
   getSafeCenter,
 } from '../build/src/utils/mapHelpers';
-import { PALGHAR_DEFAULT_CENTER } from '../build/src/utils/constants';
+import { PALGHAR_DEFAULT_CENTER, normalizeIssueType } from '../build/src/utils/constants';
 
-describe('Map Helpers', () => {
+describe('Map Helpers & Marker Colors', () => {
   describe('getIssueTypeColor', () => {
     it('returns orange for pothole', () => {
       expect(getIssueTypeColor('pothole')).toBe('#f97316');
     });
 
-    it('returns yellow for broken_street_light', () => {
+    it('returns yellow for street_light and legacy broken_street_light', () => {
+      expect(getIssueTypeColor('street_light')).toBe('#eab308');
       expect(getIssueTypeColor('broken_street_light')).toBe('#eab308');
     });
 
@@ -21,13 +22,26 @@ describe('Map Helpers', () => {
       expect(getIssueTypeColor('garbage')).toBe('#ef4444');
     });
 
-    it('returns purple for damaged_bridge', () => {
+    it('returns purple for bridge and legacy damaged_bridge', () => {
+      expect(getIssueTypeColor('bridge')).toBe('#a855f7');
       expect(getIssueTypeColor('damaged_bridge')).toBe('#a855f7');
     });
 
     it('returns blue for other or unknown category', () => {
       expect(getIssueTypeColor('other')).toBe('#3b82f6');
-      expect(getIssueTypeColor('unknown_xyz')).toBe('#3b82f6');
+      expect(getIssueTypeColor('unknown_category')).toBe('#3b82f6');
+      expect(getIssueTypeColor(null)).toBe('#3b82f6');
+    });
+  });
+
+  describe('normalizeIssueType', () => {
+    it('normalizes legacy aliases cleanly', () => {
+      expect(normalizeIssueType('broken_street_light')).toBe('street_light');
+      expect(normalizeIssueType('damaged_bridge')).toBe('bridge');
+      expect(normalizeIssueType('pothole')).toBe('pothole');
+      expect(normalizeIssueType('garbage')).toBe('garbage');
+      expect(normalizeIssueType('other')).toBe('other');
+      expect(normalizeIssueType('xyz_unknown')).toBe('other');
     });
   });
 
@@ -77,4 +91,3 @@ describe('Map Helpers', () => {
     });
   });
 });
-

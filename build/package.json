@@ -10,13 +10,14 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@vis.gl/react-google-maps": "^1.4.0",
     "canvas-confetti": "^1.9.3",
     "firebase": "^10.13.0",
     "framer-motion": "^11.5.0",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.441.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.26.0"
   },
   "devDependencies": {
@@ -31,4 +32,3 @@
     "vitest": "^2.0.5"
   }
 }
-

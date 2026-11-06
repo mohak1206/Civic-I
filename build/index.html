@@ -5,17 +5,9 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Smart City Reporter | Civic-I</title>
-    <script>
-      // Global Google Maps Auth Failure hook required before script loading
-      window.gm_authFailure = function() {
-        console.warn("Google Maps Authentication Failed (Billing, Key, or Origin issue). Reverting to fallback mode.");
-        window.dispatchEvent(new CustomEvent('google-maps-auth-failure'));
-      };
-    </script>
   </head>
   <body class="bg-zinc-950 text-zinc-100 min-h-screen antialiased selection:bg-emerald-500 selection:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
-

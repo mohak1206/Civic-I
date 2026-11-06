@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
+  envDir: path.resolve(__dirname, '..'),
   plugins: [react()],
   resolve: {
     alias: {
@@ -11,6 +12,9 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    fs: {
+      allow: ['..'],
+    },
     proxy: {
       '/ollama': {
         target: 'http://localhost:11434',
@@ -20,10 +24,10 @@ export default defineConfig({
     },
   },
   test: {
+    root: path.resolve(__dirname, '..'),
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['./test/setup.js'],
-    include: ['../test/**/*.test.{js,jsx}', 'test/**/*.test.{js,jsx}'],
+    setupFiles: [path.resolve(__dirname, './test/setup.js')],
+    include: ['test/**/*.test.{js,jsx}'],
   },
 });
-
