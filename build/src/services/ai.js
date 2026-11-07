@@ -112,7 +112,7 @@ Respond ONLY with valid JSON in this schema:
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120s timeout for cold start
 
     const response = await fetch('/ollama/api/chat', {
       method: 'POST',
@@ -131,6 +131,7 @@ Respond ONLY with valid JSON in this schema:
         ],
         format: 'json',
         stream: false,
+        keep_alive: '60m',
       }),
     });
 
@@ -232,7 +233,7 @@ export async function decideAction({ type, description, locationText }) {
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
 
     const response = await fetch('/ollama/api/chat', {
       method: 'POST',
@@ -250,6 +251,7 @@ export async function decideAction({ type, description, locationText }) {
         ],
         format: 'json',
         stream: false,
+        keep_alive: '60m',
       }),
     });
 
