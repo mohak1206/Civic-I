@@ -179,3 +179,17 @@ export function markNotificationsRead() {
   return updated;
 }
 
+export function clearReadNotifications() {
+  const list = getNotifications();
+  const updated = list.filter((n) => !n.read);
+  safeSetItem(KEYS.NOTIFICATIONS, updated);
+  window.dispatchEvent(new CustomEvent('civic-notifications-updated', { detail: updated }));
+  return updated;
+}
+
+export function clearAllNotifications() {
+  safeSetItem(KEYS.NOTIFICATIONS, []);
+  window.dispatchEvent(new CustomEvent('civic-notifications-updated', { detail: [] }));
+  return [];
+}
+
