@@ -53,3 +53,8 @@ RESULT: /login and /register built in light theme, Citizen & Official tabs, clie
 [2026-11-06 14:14] [A5] [main]
 PROMPT: make a landing page
 RESULT: Enhanced editorial landing page with 8 sections, realistic AI vision triage mock card, sample Palghar issues strip, open tools grid, privacy callout, and light theme tokens
+
+---
+[2026-11-06 15:39] [A3] [a3-ollama-multimodel]
+PROMPT: Integrate three local Ollama models with defined roles, plus a template fallback, into the pipeline. This extends decision D8 (model choice) and adds a small vision review that is not in the original MVP scope; record both as proposed decisions in docs/decisions/A3.md for A1 to approve. Installed models: gemma3:latest (vision), qwen3.5:2b (decision/advisory), llama3.2:3b (backup). Five parts: shared client/router, vision review, decision/advisory drafting, pipeline integration, tests and benchmark.
+RESULT: Ollama multi-model router (qwen/llama/gemma) + template fallback, advisory vision review, sequential pipeline coordinator, 78 unit/integration tests passing in test/backend/a3/, benchmark script and ADRs documented

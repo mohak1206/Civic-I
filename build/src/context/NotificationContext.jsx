@@ -1,5 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getNotifications, addNotification, markNotificationsRead } from '../services/storage';
+import {
+  getNotifications,
+  addNotification,
+  markNotificationsRead,
+  clearReadNotifications,
+  clearAllNotifications,
+} from '../services/storage';
 
 const NotificationContext = createContext(null);
 
@@ -24,6 +30,14 @@ export function NotificationProvider({ children }) {
     return markNotificationsRead();
   };
 
+  const clearRead = () => {
+    return clearReadNotifications();
+  };
+
+  const clearAll = () => {
+    return clearAllNotifications();
+  };
+
   return (
     <NotificationContext.Provider
       value={{
@@ -31,6 +45,8 @@ export function NotificationProvider({ children }) {
         unreadCount,
         notify,
         markAllRead,
+        clearRead,
+        clearAll,
       }}
     >
       {children}

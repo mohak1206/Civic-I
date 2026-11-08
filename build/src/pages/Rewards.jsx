@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Trophy, Award, Gift, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { getLeaderboardUsers } from '../services/storage';
+import { getLeaderboardUsers, getIssues } from '../services/storage';
 import { CIVIC_PERKS } from '../services/rewards';
 import { PageContainer } from '../components/layout/PageContainer';
 import { LevelCard } from '../components/gamification/LevelCard';
@@ -15,6 +15,28 @@ export function Rewards() {
 
   useEffect(() => {
     setLeaderboardUsers(getLeaderboardUsers());
+  }, [user]);
+
+  // Dynamically resolve all earned badges from user's submitted reports + profile
+  const resolvedBadges = useMemo(() => {
+    const earnedSet = new Set(user?.badges || []);
+    if (!user) return Array.from(earnedSet);
+
+    try {
+      const issues = getIssues();
+      const userIssues = issues.filter(
+        (i) => i.reporterId === user.id || (user.isDemo && (!i.reporterId || i.reporterId === 'usr_anonymous' || i.reporterId.includes('demo')))
+      );
+
+      if (userIssues.length >= 1) earnedSet.add('first_report');
+      if (userIssues.length >= 3) earnedSet.add('reporter_3');
+      if (userIssues.some((i) => i.location?.lat && i.location?.lng)) earnedSet.add('geo_scout');
+      if (userIssues.some((i) => i.aiClassification?.confirmedByUser)) earnedSet.add('ai_partner');
+      if (userIssues.some((i) => i.status === 'resolved')) earnedSet.add('problem_solver');
+      if ((user.points || 0) >= 500) earnedSet.add('city_guardian');
+    } catch {}
+
+    return Array.from(earnedSet);
   }, [user]);
 
   return (
@@ -33,7 +55,7 @@ export function Rewards() {
       {/* Grid: Badges + Leaderboard */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <BadgeList earnedBadgeIds={user?.badges || []} />
+          <BadgeList earnedBadgeIds={resolvedBadges} />
 
           {/* Civic Perks Table */}
           <Card className="space-y-3">

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getCurrentUser, saveCurrentUser, clearCurrentUser } from '../services/storage';
+import { getCurrentUser, saveCurrentUser, clearCurrentUser, getIssues } from '../services/storage';
 import { loginWithGoogle, logoutFirebase, createDemoUser, isFirebaseConfigured } from '../services/firebase';
 import { getLevel } from '../services/gamification';
 
@@ -15,6 +15,53 @@ export function AuthProvider({ children }) {
     };
     window.addEventListener('civic-auth-changed', handleAuthChange);
     return () => window.removeEventListener('civic-auth-changed', handleAuthChange);
+  }, []);
+
+  // Self-heal: ensure user points and badges reflect existing submitted reports
+  useEffect(() => {
+    const current = getCurrentUser();
+    if (current && current.id) {
+      try {
+        const issues = getIssues();
+        const userIssues = issues.filter(
+          (i) => i.reporterId === current.id || (current.isDemo && (!i.reporterId || i.reporterId === 'usr_anonymous' || i.reporterId.includes('demo')))
+        );
+        const totalEarned = userIssues.reduce((sum, i) => sum + (Number(i.pointsAwarded) || 0), 0);
+        const currentPoints = Math.max(current.points || 0, totalEarned);
+
+        const badgeStats = {
+          totalReports: userIssues.length,
+          reportsWithLocation: userIssues.filter((i) => i.location?.lat && i.location?.lng).length,
+          reportsWithAI: userIssues.filter((i) => i.aiClassification?.confirmedByUser).length,
+          resolvedReports: userIssues.filter((i) => i.status === 'resolved').length,
+          currentPoints,
+        };
+
+        const badgeSet = new Set(current.badges || []);
+        if (badgeStats.totalReports >= 1) badgeSet.add('first_report');
+        if (badgeStats.totalReports >= 3) badgeSet.add('reporter_3');
+        if (badgeStats.reportsWithLocation >= 1) badgeSet.add('geo_scout');
+        if (badgeStats.reportsWithAI >= 1) badgeSet.add('ai_partner');
+        if (badgeStats.resolvedReports >= 1) badgeSet.add('problem_solver');
+        if (badgeStats.currentPoints >= 500) badgeSet.add('city_guardian');
+
+        const resolvedBadges = Array.from(badgeSet);
+        const pointsNeedUpdate = currentPoints > (current.points || 0);
+        const badgesNeedUpdate = resolvedBadges.length > (current.badges || []).length;
+
+        if (pointsNeedUpdate || badgesNeedUpdate) {
+          const healed = {
+            ...current,
+            points: currentPoints,
+            badges: resolvedBadges,
+          };
+          saveCurrentUser(healed);
+          setUser(healed);
+        }
+      } catch (e) {
+        console.warn('Failed to sync report points and badges:', e);
+      }
+    }
   }, []);
 
   const loginDemo = (roleOrName = 'citizen', options = {}) => {
@@ -67,10 +114,11 @@ export function AuthProvider({ children }) {
   };
 
   const awardPoints = (amount) => {
-    if (!user) return;
-    const nextPoints = (user.points || 0) + amount;
+    const current = getCurrentUser() || user;
+    if (!current) return 0;
+    const nextPoints = (current.points || 0) + amount;
     const updated = {
-      ...user,
+      ...current,
       points: nextPoints,
     };
     saveCurrentUser(updated);
@@ -79,12 +127,14 @@ export function AuthProvider({ children }) {
   };
 
   const addBadges = (newBadgeIds) => {
-    if (!user || !newBadgeIds || newBadgeIds.length === 0) return;
-    const current = new Set(user.badges || []);
-    newBadgeIds.forEach((id) => current.add(id));
+    if (!newBadgeIds || newBadgeIds.length === 0) return;
+    const current = getCurrentUser() || user;
+    if (!current) return;
+    const currentBadges = new Set(current.badges || []);
+    newBadgeIds.forEach((id) => currentBadges.add(id));
     const updated = {
-      ...user,
-      badges: Array.from(current),
+      ...current,
+      badges: Array.from(currentBadges),
     };
     saveCurrentUser(updated);
     setUser(updated);
